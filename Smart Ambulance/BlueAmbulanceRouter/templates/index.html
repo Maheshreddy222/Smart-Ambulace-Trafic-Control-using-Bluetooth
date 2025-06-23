@@ -1,0 +1,152 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<section id="dashboard" class="mb-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Dashboard</h2>
+        </div>
+    </div>
+    
+    <!-- System Status & Controls -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="dashboard-box">
+                <h4 class="mb-3">Traffic Light Status</h4>
+                <div class="traffic-light mb-3">
+                    <div class="light red"></div>
+                    <div class="light yellow"></div>
+                    <div class="light green"></div>
+                </div>
+                <div class="text-center">
+                    <h5>Current State: <span id="traffic-state" class="badge bg-danger">RED</span></h5>
+                    <p class="text-muted">Last updated: <span id="last-updated">--:--:--</span></p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="dashboard-box">
+                <h4 class="mb-3">Ambulance Detection</h4>
+                <div class="text-center mb-4">
+                    <span id="ambulance-status" class="ambulance-badge badge bg-secondary p-3 fs-5 mb-3">NONE</span>
+                    <p id="ambulance-status-text">No ambulance currently detected</p>
+                </div>
+                <div class="d-grid gap-2">
+                    <button id="detect-ambulance" class="btn btn-danger">
+                        <i class="fas fa-ambulance me-2"></i> Simulate Ambulance Detection
+                    </button>
+                    <button id="clear-ambulance" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i> Clear Ambulance
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-12 mb-4">
+            <div class="dashboard-box">
+                <h4 class="mb-3">System Mode</h4>
+                <div class="text-center mb-4">
+                    <span id="system-mode" class="badge bg-success p-2 fs-5 mb-3">NORMAL OPERATION</span>
+                    <p>Current system operating mode</p>
+                </div>
+                <div class="mode-toggle-container text-center">
+                    <label class="mode-toggle">
+                        <input type="checkbox" id="mode-toggle">
+                        <span class="slider"></span>
+                        <span class="mode-labels">
+                            <span>NORMAL</span>
+                            <span>EMERGENCY</span>
+                        </span>
+                    </label>
+                    <p class="text-muted mt-2">Toggle operating mode</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Data & Charts -->
+    <div class="row mb-4">
+        <div class="col-lg-8 mb-4">
+            <div class="dashboard-box">
+                <h4 class="mb-3">Ambulance Detection History</h4>
+                <div style="height: 300px;">
+                    <canvas id="ambulance-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mb-4">
+            <div class="dashboard-box">
+                <h4 class="mb-3">Recent Detections</h4>
+                <ul id="recent-detections" class="list-group">
+                    <li class="list-group-item bg-dark text-light">Loading...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="history" class="mb-5">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Traffic Event History</h2>
+            <div class="dashboard-box">
+                <h4 class="mb-3">Recent Traffic Light Changes</h4>
+                <div id="traffic-timeline" class="timeline">
+                    <div class="timeline-item">
+                        <h6>Loading...</h6>
+                        <p>Fetching traffic history data...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="architecture">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">System Architecture</h2>
+            <div class="dashboard-box">
+                <h4 class="mb-3">How It Works</h4>
+                <div id="system-architecture" class="architecture-diagram">
+                    <!-- Architecture diagram will be drawn here by JS -->
+                </div>
+                <div class="mt-4">
+                    <h5>System Components</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-microchip me-2"></i> Hardware</h6>
+                            <ul class="list-group">
+                                <li class="list-group-item bg-dark">Arduino Uno (Microcontroller)</li>
+                                <li class="list-group-item bg-dark">HC-05 Bluetooth Module</li>
+                                <li class="list-group-item bg-dark">Traffic Light LEDs</li>
+                                <li class="list-group-item bg-dark">Relay Module</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-code me-2"></i> Software</h6>
+                            <ul class="list-group">
+                                <li class="list-group-item bg-dark">Arduino IDE (Microcontroller code)</li>
+                                <li class="list-group-item bg-dark">Python Flask (Backend)</li>
+                                <li class="list-group-item bg-dark">HTML/CSS/JS (Frontend)</li>
+                                <li class="list-group-item bg-dark">MySQL & Firebase (Database)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize system architecture diagram on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        drawSystemArchitecture();
+    });
+</script>
+{% endblock %}

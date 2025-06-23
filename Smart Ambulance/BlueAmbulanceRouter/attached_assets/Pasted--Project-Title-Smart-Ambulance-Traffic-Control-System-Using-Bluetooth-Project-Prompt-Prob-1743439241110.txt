@@ -1,0 +1,85 @@
+📜 Project Title:
+Smart Ambulance Traffic Control System Using Bluetooth
+
+📌 Project Prompt:
+💡 Problem Statement:
+Emergency vehicles like ambulances often get stuck in traffic, causing delays that can be life-threatening. A smart traffic control system is needed to automatically detect an approaching ambulance and clear the path by controlling traffic signals dynamically.
+
+🎯 Objective:
+To develop a Bluetooth-based Smart Traffic Control System that prioritizes ambulances.
+
+To implement real-time signal control using HC-05 Bluetooth Module and Arduino.
+
+To create a web dashboard that displays live traffic status using Flask, Firebase, and MySQL.
+
+🛠 Technologies Used:
+🚀 Hardware Components:
+Arduino Uno (Microcontroller)
+
+HC-05 Bluetooth Module (Wireless Communication)
+
+Traffic Light LEDs (Red, Yellow, Green)
+
+Relay Module (For switching signals)
+
+Power Supply (5V)
+
+💻 Software & Tools:
+Arduino IDE (For writing and uploading microcontroller code)
+
+Proteus (For circuit simulation)
+
+Python (Flask Framework) (For backend processing)
+
+HTML, CSS, JavaScript (For frontend)
+
+MySQL & Firebase (For real-time database)
+
+📊 Features & Implementation:
+1️⃣ Ambulance Detection using Bluetooth:
+The HC-05 Bluetooth module in the ambulance sends a signal ('A') when detected near the traffic signal.
+
+The Arduino receives this signal and sends it to the Flask backend via serial communication.
+
+2️⃣ Smart Traffic Signal Control:
+Normal Traffic Mode: Default signal cycle operates based on timing.
+
+Ambulance Priority Mode: When an ambulance is detected, the green signal is turned on, and other traffic lights are stopped.
+
+3️⃣ Real-Time Web Dashboard:
+A frontend dashboard displays the current traffic light status.
+
+The Flask backend fetches traffic data from MySQL & Firebase and updates the dashboard every 2 seconds.
+
+4️⃣ Database Logging:
+MySQL Database: Stores timestamps of ambulance detections and traffic changes.
+
+Firebase: Stores real-time data to enable future expansions, such as a mobile app.
+
+📌 System Architecture:
+🚦 Data Flow:
+Ambulance Bluetooth Signal → Sent by HC-05
+
+Arduino Receives Signal → Passes to Flask via serial
+
+Flask Backend Processes Signal → Updates traffic light status
+
+Traffic Lights Change Dynamically
+
+Data Stored in Firebase & MySQL
+
+Web Dashboard Displays Live Status
+
+📜 Expected Outcome:
+✔️ Efficient traffic signal control with ambulance priority
+✔️ Reduced ambulance response time in emergencies
+✔️ Live traffic monitoring on a web interface
+✔️ Accurate data logging for traffic analysis
+
+🔮 Future Scope:
+GPS-based Ambulance Detection (instead of Bluetooth)
+
+AI-based Traffic Prediction for better management
+
+Integration with Emergency Call Centers
+

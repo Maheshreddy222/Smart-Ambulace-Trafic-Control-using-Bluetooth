@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Ambulance Traffic Control System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* Custom styles beyond Bootstrap */
+        
+        /* Traffic Light Styling */
+        .traffic-light {
+            width: 120px;
+            height: 280px;
+            background-color: #333;
+            border-radius: 20px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0 auto;
+        }
+        
+        .light {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #444;
+        }
+        
+        .light.red.active {
+            background-color: #ff3b30;
+            box-shadow: 0 0 25px #ff3b30;
+        }
+        
+        .light.yellow.active {
+            background-color: #ffcc00;
+            box-shadow: 0 0 25px #ffcc00;
+        }
+        
+        .light.green.active {
+            background-color: #34c759;
+            box-shadow: 0 0 25px #34c759;
+        }
+        
+        /* Ambulance Detection Badge */
+        .ambulance-badge {
+            transition: all 0.5s ease;
+        }
+        
+        .ambulance-badge.detected {
+            background-color: var(--bs-danger) !important;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        /* System Architecture Diagram */
+        .architecture-diagram {
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .component {
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            background-color: var(--bs-dark);
+            border: 1px solid var(--bs-primary);
+        }
+        
+        .flow-arrow {
+            font-size: 24px;
+            color: var(--bs-info);
+        }
+        
+        /* Timeline section */
+        .timeline-item {
+            border-left: 3px solid var(--bs-primary);
+            padding-left: 20px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: "";
+            position: absolute;
+            left: -10px;
+            top: 0;
+            height: 15px;
+            width: 15px;
+            border-radius: 50%;
+            background-color: var(--bs-primary);
+        }
+        
+        .timeline-item.green::before {
+            background-color: var(--bs-success);
+        }
+        
+        .timeline-item.yellow::before {
+            background-color: var(--bs-warning);
+        }
+        
+        .timeline-item.red::before {
+            background-color: var(--bs-danger);
+        }
+        
+        /* Dashboard Boxes */
+        .dashboard-box {
+            background-color: var(--bs-dark);
+            border-radius: 10px;
+            padding: 20px;
+            height: 100%;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .dashboard-box:hover {
+            transform: translateY(-5px);
+        }
+        
+        /* Mode Toggle Button */
+        .mode-toggle {
+            position: relative;
+            display: inline-block;
+            width: 200px;
+            height: 34px;
+        }
+        
+        .mode-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bs-secondary);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--bs-danger);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(166px);
+        }
+        
+        .mode-labels {
+            position: absolute;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            box-sizing: border-box;
+            z-index: 1;
+            line-height: 34px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-ambulance me-2"></i>
+                Smart Ambulance Traffic Control
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#history">History</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#architecture">System Architecture</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <section id="dashboard" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="mb-4">Dashboard</h2>
+                </div>
+            </div>
+            
+            <!-- System Status & Controls -->
+            <div class="row mb-4">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="dashboard-box">
+                        <h4 class="mb-3">Traffic Light Status</h4>
+                        <div class="traffic-light mb-3">
+                            <div class="light red"></div>
+                            <div class="light yellow"></div>
+                            <div class="light green"></div>
+                        </div>
+                        <div class="text-center">
+                            <h5>Current State: <span id="traffic-state" class="badge bg-danger">RED</span></h5>
+                            <p class="text-muted">Last updated: <span id="last-updated">--:--:--</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="dashboard-box">
+                        <h4 class="mb-3">Ambulance Detection</h4>
+                        <div class="text-center mb-4">
+                            <span id="ambulance-status" class="ambulance-badge badge bg-secondary p-3 fs-5 mb-3">NONE</span>
+                            <p id="ambulance-status-text">No ambulance currently detected</p>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button id="detect-ambulance" class="btn btn-danger">
+                                <i class="fas fa-ambulance me-2"></i> Simulate Ambulance Detection
+                            </button>
+                            <button id="clear-ambulance" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i> Clear Ambulance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 col-md-12 mb-4">
+                    <div class="dashboard-box">
+                        <h4 class="mb-3">System Mode</h4>
+                        <div class="text-center mb-4">
+                            <span id="system-mode" class="badge bg-success p-2 fs-5 mb-3">NORMAL OPERATION</span>
+                            <p>Current system operating mode</p>
+                        </div>
+                        <div class="mode-toggle-container text-center">
+                            <label class="mode-toggle">
+                                <input type="checkbox" id="mode-toggle">
+                                <span class="slider"></span>
+                                <span class="mode-labels">
+                                    <span>NORMAL</span>
+                                    <span>EMERGENCY</span>
+                                </span>
+                            </label>
+                            <p class="text-muted mt-2">Toggle operating mode</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recent Data & Charts -->
+            <div class="row mb-4">
+                <div class="col-lg-8 mb-4">
+                    <div class="dashboard-box">
+                        <h4 class="mb-3">Ambulance Detection History</h4>
+                        <div style="height: 300px;">
+                            <canvas id="ambulance-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 mb-4">
+                    <div class="dashboard-box">
+                        <h4 class="mb-3">Recent Detections</h4>
+                        <ul id="recent-detections" class="list-group">
+                            <li class="list-group-item bg-dark text-light">Loading...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="history" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="mb-4">Traffic Event History</h2>
+                    <div class="dashboard-box">
+                        <h4 class="mb-3">Recent Traffic Light Changes</h4>
+                        <div id="traffic-timeline" class="timeline">
+                            <div class="timeline-item">
+                                <h6>Loading...</h6>
+                                <p>Fetching traffic history data...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="architecture">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="mb-4">System Architecture</h2>
+                    <div class="dashboard-box">
+                        <h4 class="mb-3">How It Works</h4>
+                        <div id="system-architecture" class="architecture-diagram">
+                            <!-- Architecture diagram will be drawn here by JS -->
+                        </div>
+                        <div class="mt-4">
+                            <h5>System Components</h5>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-microchip me-2"></i> Hardware</h6>
+                                    <ul class="list-group">
+                                        <li class="list-group-item bg-dark">Arduino Uno (Microcontroller)</li>
+                                        <li class="list-group-item bg-dark">HC-05 Bluetooth Module</li>
+                                        <li class="list-group-item bg-dark">Traffic Light LEDs</li>
+                                        <li class="list-group-item bg-dark">Relay Module</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6><i class="fas fa-code me-2"></i> Software</h6>
+                                    <ul class="list-group">
+                                        <li class="list-group-item bg-dark">Arduino IDE (Microcontroller code)</li>
+                                        <li class="list-group-item bg-dark">Python Flask (Backend)</li>
+                                        <li class="list-group-item bg-dark">HTML/CSS/JS (Frontend)</li>
+                                        <li class="list-group-item bg-dark">MySQL & Firebase (Database)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Smart Ambulance Traffic Control System</h5>
+                    <p>A Bluetooth-based system for prioritizing ambulances at traffic signals</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>
+                        <i class="fas fa-code"></i> with 
+                        <i class="fas fa-heart text-danger"></i> 
+                        for emergency services
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Bootstrap JS with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // ----- TRAFFIC LIGHT JS -----
+        function updateTrafficLight(state) {
+            // Reset all lights
+            document.querySelectorAll('.light').forEach(light => {
+                light.classList.remove('active');
+            });
+            
+            // Activate the correct light
+            const activeLight = document.querySelector(`.light.${state}`);
+            if (activeLight) {
+                activeLight.classList.add('active');
+            }
+            
+            // Update the traffic state text display
+            const stateDisplay = document.getElementById('traffic-state');
+            if (stateDisplay) {
+                stateDisplay.textContent = state.toUpperCase();
+                
+                // Update the color class
+                stateDisplay.className = 'badge'; // Clear existing classes
+                
+                if (state === 'red') {
+                    stateDisplay.classList.add('bg-danger');
+                } else if (state === 'yellow') {
+                    stateDisplay.classList.add('bg-warning');
+                } else if (state === 'green') {
+                    stateDisplay.classList.add('bg-success');
+                }
+            }
+        }
+        
+        // Draw system architecture diagram using SVG
+        function drawSystemArchitecture() {
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("width", "100%");
+            svg.setAttribute("height", "300");
+            svg.setAttribute("viewBox", "0 0 800 300");
+            svg.style.maxWidth = "800px";
+            svg.style.margin = "0 auto";
+            svg.style.display = "block";
+            
+            // Define components with their positions
+            const components = [
+                { id: "ambulance", x: 50, y: 50, width: 120, height: 60, text: "Ambulance", color: "#dc3545" },
+                { id: "bluetooth", x: 200, y: 50, width: 120, height: 60, text: "HC-05 Bluetooth", color: "#0d6efd" },
+                { id: "arduino", x: 350, y: 50, width: 120, height: 60, text: "Arduino Uno", color: "#198754" },
+                { id: "traffic-light", x: 500, y: 50, width: 120, height: 60, text: "Traffic Lights", color: "#6c757d" },
+                { id: "flask", x: 350, y: 150, width: 120, height: 60, text: "Flask Backend", color: "#0dcaf0" },
+                { id: "database", x: 200, y: 230, width: 120, height: 60, text: "Database", color: "#6610f2" },
+                { id: "dashboard", x: 500, y: 230, width: 120, height: 60, text: "Web Dashboard", color: "#fd7e14" }
+            ];
+            
+            // Define connections between components
+            const connections = [
+                { from: "ambulance", to: "bluetooth", text: "Signal" },
+                { from: "bluetooth", to: "arduino", text: "Data" },
+                { from: "arduino", to: "traffic-light", text: "Control" },
+                { from: "arduino", to: "flask", text: "Serial" },
+                { from: "flask", to: "database", text: "Store" },
+                { from: "flask", to: "dashboard", text: "Update" },
+                { from: "database", to: "dashboard", text: "Read" }
+            ];
+            
+            // Draw components
+            components.forEach(comp => {
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("id", comp.id);
+                rect.setAttribute("x", comp.x);
+                rect.setAttribute("y", comp.y);
+                rect.setAttribute("width", comp.width);
+                rect.setAttribute("height", comp.height);
+                rect.setAttribute("rx", "10");
+                rect.setAttribute("ry", "10");
+                rect.setAttribute("fill", comp.color);
+                rect.setAttribute("stroke", "#fff");
+                rect.setAttribute("stroke-width", "2");
+                svg.appendChild(rect);
+                
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", comp.x + comp.width/2);
+                text.setAttribute("y", comp.y + comp.height/2);
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("dominant-baseline", "middle");
+                text.setAttribute("fill", "#fff");
+                text.setAttribute("font-weight", "bold");
+                text.textContent = comp.text;
+                svg.appendChild(text);
+            });
+            
+            // Draw connections
+            connections.forEach(conn => {
+                const fromComp = components.find(c => c.id === conn.from);
+                const toComp = components.find(c => c.id === conn.to);
+                
+                if (fromComp && toComp) {
+                    // Calculate line coordinates
+                    const startX = fromComp.x + fromComp.width;
+                    const startY = fromComp.y + fromComp.height/2;
+                    const endX = toComp.x;
+                    const endY = toComp.y + toComp.height/2;
+                    
+                    // For vertical connections, use an S-curve with two control points
+                    if (Math.abs(startY - endY) > 50) {
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        const midX = (startX + endX) / 2;
+                        
+                        path.setAttribute("d", `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`);
+                        path.setAttribute("fill", "none");
+                        path.setAttribute("stroke", "#fff");
+                        path.setAttribute("stroke-width", "2");
+                        path.setAttribute("marker-end", "url(#arrowhead)");
+                        svg.appendChild(path);
+                    } else {
+                        // For horizontal connections, use a straight line
+                        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        line.setAttribute("x1", startX);
+                        line.setAttribute("y1", startY);
+                        line.setAttribute("x2", endX);
+                        line.setAttribute("y2", endY);
+                        line.setAttribute("stroke", "#fff");
+                        line.setAttribute("stroke-width", "2");
+                        line.setAttribute("marker-end", "url(#arrowhead)");
+                        svg.appendChild(line);
+                    }
+                    
+                    // Add text to the connection if needed
+                    if (conn.text) {
+                        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        text.setAttribute("x", (startX + endX) / 2);
+                        text.setAttribute("y", (startY + endY) / 2 - 10);
+                        text.setAttribute("text-anchor", "middle");
+                        text.setAttribute("fill", "#fff");
+                        text.setAttribute("font-size", "12");
+                        text.textContent = conn.text;
+                        svg.appendChild(text);
+                    }
+                }
+            });
+            
+            // Create arrow marker definition
+            const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+            const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+            marker.setAttribute("id", "arrowhead");
+            marker.setAttribute("markerWidth", "10");
+            marker.setAttribute("markerHeight", "7");
+            marker.setAttribute("refX", "10");
+            marker.setAttribute("refY", "3.5");
+            marker.setAttribute("orient", "auto");
+            
+            const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            polygon.setAttribute("points", "0 0, 10 3.5, 0 7");
+            polygon.setAttribute("fill", "#fff");
+            
+            marker.appendChild(polygon);
+            defs.appendChild(marker);
+            svg.appendChild(defs);
+            
+            // Append the SVG to the container
+            document.getElementById('system-architecture').appendChild(svg);
+        }
+
+        // ----- CHART JS -----
+        // Initialize ambulance detection chart
+        let ambulanceChart = null;
+        
+        function updateAmbulanceChart(detections) {
+            // Process data for chart
+            const timestamps = detections.map(d => new Date(d.timestamp));
+            
+            // Sort timestamps chronologically
+            timestamps.sort((a, b) => a - b);
+            
+            // Format dates for display
+            const labels = timestamps.map(t => {
+                return t.toLocaleDateString() + ' ' + 
+                       t.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            });
+            
+            // Count detections by hour for the histogram
+            const hourCounts = countDetectionsByHour(timestamps);
+            
+            // Create or update chart
+            const ctx = document.getElementById('ambulance-chart').getContext('2d');
+            
+            if (ambulanceChart) {
+                // Update existing chart
+                ambulanceChart.data.labels = Array.from({length: 24}, (_, i) => `${i}:00`);
+                ambulanceChart.data.datasets[0].data = hourCounts;
+                ambulanceChart.update();
+            } else {
+                // Create new chart
+                ambulanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                        datasets: [{
+                            label: 'Ambulance Detections by Hour',
+                            data: hourCounts,
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: 'rgb(220, 53, 69)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: '#fff'
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        return `Hour: ${tooltipItems[0].label}`;
+                                    },
+                                    label: function(context) {
+                                        return `Detections: ${context.raw}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Hour of Day',
+                                    color: '#fff'
+                                },
+                                ticks: {
+                                    color: '#fff'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Number of Detections',
+                                    color: '#fff'
+                                },
+                                ticks: {
+                                    precision: 0,
+                                    color: '#fff'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Update recent detections list
+            updateRecentDetections(detections);
+        }
+        
+        function countDetectionsByHour(timestamps) {
+            // Initialize array with zeros for each hour (0-23)
+            const hourCounts = Array(24).fill(0);
+            
+            // Count detections for each hour
+            timestamps.forEach(timestamp => {
+                const hour = timestamp.getHours();
+                hourCounts[hour]++;
+            });
+            
+            return hourCounts;
+        }
+        
+        function updateRecentDetections(detections) {
+            const recentList = document.getElementById('recent-detections');
+            
+            // Clear existing list
+            recentList.innerHTML = '';
+            
+            // Sort detections by timestamp (newest first)
+            const sortedDetections = [...detections].sort((a, b) => {
+                return new Date(b.timestamp) - new Date(a.timestamp);
+            });
+            
+            // Take the 5 most recent detections
+            const recentDetections = sortedDetections.slice(0, 5);
+            
+            if (recentDetections.length === 0) {
+                const emptyItem = document.createElement('li');
+                emptyItem.className = 'list-group-item bg-dark text-light';
+                emptyItem.textContent = 'No recent detections';
+                recentList.appendChild(emptyItem);
+            } else {
+                recentDetections.forEach(detection => {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'list-group-item bg-dark text-light border-secondary';
+                    
+                    const detectionTime = new Date(detection.timestamp);
+                    const timeString = detectionTime.toLocaleString();
+                    
+                    listItem.innerHTML = `
+                        <span class="badge bg-danger me-2">Ambulance</span>
+                        <span>${timeString}</span>
+                    `;
+                    
+                    recentList.appendChild(listItem);
+                });
+            }
+        }
+
+        // ----- DASHBOARD JS -----
+        // Sample data for standalone HTML (replace with actual data source in real implementation)
+        const sampleTrafficEvents = [];
+        const sampleAmbulanceDetections = [];
+        let currentTrafficState = "red";
+        let ambulanceDetected = false;
+        let systemMode = "normal";
+
+        // Initialize sample data
+        function initializeSampleData() {
+            // Clear existing data
+            sampleTrafficEvents.length = 0;
+            sampleAmbulanceDetections.length = 0;
+            
+            // Add past traffic events (last 24 hours)
+            const now = new Date();
+            const states = ["red", "yellow", "green"];
+            
+            for (let i = 0; i < 48; i++) {  // 24 hours with approx 30min intervals
+                const eventTime = new Date(now.getTime() - (24 * 60 * 60 * 1000) + (30 * 60 * 1000 * i));
+                const state = states[i % 3];
+                sampleTrafficEvents.push({
+                    state: state,
+                    timestamp: eventTime.toISOString()
+                });
+            }
+            
+            // Add a few past ambulance detections
+            const detectionTimes = [
+                new Date(now.getTime() - (23 * 60 * 60 * 1000)),
+                new Date(now.getTime() - (18 * 60 * 60 * 1000)),
+                new Date(now.getTime() - (12 * 60 * 60 * 1000)),
+                new Date(now.getTime() - (6 * 60 * 60 * 1000)),
+                new Date(now.getTime() - (2 * 60 * 60 * 1000))
+            ];
+            
+            for (let dt of detectionTimes) {
+                sampleAmbulanceDetections.push({
+                    timestamp: dt.toISOString()
+                });
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize sample data
+            initializeSampleData();
+            
+            // Initialize the dashboard
+            initDashboard();
+            
+            // Set up event listeners
+            setupEventListeners();
+            
+            // Draw system architecture diagram
+            drawSystemArchitecture();
+        });
+        
+        function initDashboard() {
+            // Initial data update
+            updateTrafficStatus();
+            updateTrafficHistory();
+            
+            // Set up regular updates
+            setInterval(updateTrafficStatus, 2000);
+            setInterval(updateTrafficHistory, 10000);
+            
+            // Start the traffic cycle simulation (only works in normal mode)
+            setInterval(simulateTrafficCycle, 5000);
+        }
+        
+        function setupEventListeners() {
+            // Ambulance detection simulation buttons
+            document.getElementById('detect-ambulance').addEventListener('click', function() {
+                simulateAmbulance('detect');
+            });
+            
+            document.getElementById('clear-ambulance').addEventListener('click', function() {
+                simulateAmbulance('clear');
+            });
+            
+            // Mode toggle
+            document.getElementById('mode-toggle').addEventListener('change', function() {
+                if (this.checked) {
+                    // Toggle to ambulance priority mode
+                    simulateAmbulance('detect');
+                } else {
+                    // Toggle to normal mode
+                    simulateAmbulance('clear');
+                }
+            });
+        }
+        
+        function updateTrafficStatus() {
+            // Update traffic light visualization
+            updateTrafficLight(currentTrafficState);
+            
+            // Update ambulance detection status
+            updateAmbulanceStatus(ambulanceDetected);
+            
+            // Update system mode display
+            updateSystemMode(systemMode);
+            
+            // Update last updated time
+            document.getElementById('last-updated').textContent = 
+                new Date().toLocaleTimeString();
+        }
+        
+        function updateTrafficHistory() {
+            // Update traffic events timeline
+            updateTrafficTimeline(sampleTrafficEvents);
+            
+            // Update ambulance detection chart
+            updateAmbulanceChart(sampleAmbulanceDetections);
+        }
+        
+        function updateAmbulanceStatus(detected) {
+            const statusBadge = document.getElementById('ambulance-status');
+            const statusText = document.getElementById('ambulance-status-text');
+            
+            if (detected) {
+                statusBadge.classList.add('detected');
+                statusBadge.textContent = 'DETECTED';
+                statusText.textContent = 'Ambulance is currently in the vicinity';
+                
+                // Also update the mode toggle
+                document.getElementById('mode-toggle').checked = true;
+            } else {
+                statusBadge.classList.remove('detected');
+                statusBadge.textContent = 'NONE';
+                statusText.textContent = 'No ambulance currently detected';
+                
+                // Update the mode toggle
+                document.getElementById('mode-toggle').checked = false;
+            }
+        }
+        
+        function updateSystemMode(mode) {
+            const modeDisplay = document.getElementById('system-mode');
+            
+            if (mode === 'ambulance-priority') {
+                modeDisplay.textContent = 'AMBULANCE PRIORITY';
+                modeDisplay.className = 'badge bg-danger p-2 fs-5 mb-3';
+            } else {
+                modeDisplay.textContent = 'NORMAL OPERATION';
+                modeDisplay.className = 'badge bg-success p-2 fs-5 mb-3';
+            }
+        }
+        
+        function updateTrafficTimeline(events) {
+            const timelineContainer = document.getElementById('traffic-timeline');
+            
+            // Clear existing timeline
+            timelineContainer.innerHTML = '';
+            
+            // Add the most recent 8 events (in reverse chronological order)
+            const recentEvents = events.slice(-8).reverse();
+            
+            recentEvents.forEach(event => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = `timeline-item ${event.state}`;
+                
+                const eventTime = new Date(event.timestamp);
+                
+                timelineItem.innerHTML = `
+                    <h6>${formatTimeForDisplay(eventTime)}</h6>
+                    <p>Traffic light changed to <strong>${event.state.toUpperCase()}</strong></p>
+                `;
+                
+                timelineContainer.appendChild(timelineItem);
+            });
+        }
+        
+        function simulateAmbulance(action) {
+            if (action === 'detect') {
+                // Simulate ambulance detection
+                ambulanceDetected = true;
+                systemMode = "ambulance-priority";
+                currentTrafficState = "green";  // Turn green for ambulance
+                
+                // Add to detection events
+                const now = new Date();
+                sampleAmbulanceDetections.push({
+                    timestamp: now.toISOString()
+                });
+                sampleTrafficEvents.push({
+                    state: currentTrafficState,
+                    timestamp: now.toISOString()
+                });
+                
+                console.log("Ambulance detected, traffic light set to green");
+            } else if (action === 'clear') {
+                // Simulate ambulance passing
+                ambulanceDetected = false;
+                systemMode = "normal";
+                
+                // Reset to a random state to simulate normal operation
+                const states = ["red", "yellow", "green"];
+                currentTrafficState = states[Math.floor(Math.random() * states.length)];
+                
+                // Add to traffic events
+                const now = new Date();
+                sampleTrafficEvents.push({
+                    state: currentTrafficState,
+                    timestamp: now.toISOString()
+                });
+                
+                console.log("Ambulance cleared, returning to normal operation");
+            }
+            
+            // Immediate update after simulation
+            updateTrafficStatus();
+            updateTrafficHistory();
+        }
+        
+        function simulateTrafficCycle() {
+            // Only cycle if in normal mode
+            if (systemMode === "normal") {
+                // Cycle through states: red -> green -> yellow -> red
+                if (currentTrafficState === "red") {
+                    currentTrafficState = "green";
+                } else if (currentTrafficState === "green") {
+                    currentTrafficState = "yellow";
+                } else if (currentTrafficState === "yellow") {
+                    currentTrafficState = "red";
+                }
+                    
+                // Add to traffic events
+                const now = new Date();
+                sampleTrafficEvents.push({
+                    state: currentTrafficState,
+                    timestamp: now.toISOString()
+                });
+                
+                console.log(`Traffic light changed to ${currentTrafficState}`);
+            } else {
+                console.log("Traffic cycle not changed - system in ambulance priority mode");
+            }
+        }
+        
+        function formatTimeForDisplay(date) {
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+    </script>
+</body>
+</html>
